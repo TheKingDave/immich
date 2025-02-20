@@ -1246,6 +1246,8 @@ export type SystemConfigOAuthDto = {
     signingAlgorithm: string;
     storageLabelClaim: string;
     storageQuotaClaim: string;
+    updateStorageQuotaOnLogin: boolean;
+    updateUserNameOnLogin: boolean;
 };
 export type SystemConfigPasswordLoginDto = {
     enabled: boolean;

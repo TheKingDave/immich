@@ -121,6 +121,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    updateStorageQuotaOnLogin: false,
+    updateUserNameOnLogin: false,
   },
   passwordLogin: {
     enabled: true,

@@ -153,6 +153,59 @@ describe(`/oauth`, () => {
       expect(user.quotaSizeInBytes).toBe(25 * 2 ** 30); // 25 GiB;
     });
 
+    describe('updateStorageQuotaOnLogin: false', () => {
+      it('should not update the quota from claim', async () => {
+        const firstUrl = await loginWithOAuth(OAuthUser.WITH_QUOTA);
+
+        const { body: firstBody } = await request(app).post('/oauth/callback').send({ url: firstUrl });
+        const user = await getMyUser({ headers: asBearerAuth(firstBody.accessToken) });
+        expect(user.quotaSizeInBytes).toBe(25 * 2 ** 30); // 25 GiB;
+
+        const url = await loginWithOAuth(OAuthUser.WITH_CHANGED_QUOTA);
+        const { status, body } = await request(app).post('/oauth/callback').send({ url });
+        expect(status).toBe(201);
+        expect(body).toMatchObject({
+          accessToken: expect.any(String),
+          userId: expect.any(String),
+          userEmail: 'oauth-with-quota@immich.app',
+        });
+
+        const user2 = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+        expect(user2.quotaSizeInBytes).toBe(25 * 2 ** 30); // 25 GiB;
+      });
+    });
+
+    describe('updateStorageQuotaOnLogin: true', () => {
+      it('should update the quota from claim', async () => {
+        await setupOAuth(admin.accessToken, {
+          enabled: true,
+          clientId: OAuthClient.DEFAULT,
+          clientSecret: OAuthClient.DEFAULT,
+          buttonText: 'Login with Immich',
+          storageLabelClaim: 'immich_username',
+          updateStorageQuotaOnLogin: true,
+        });
+
+        const firstUrl = await loginWithOAuth(OAuthUser.WITH_QUOTA);
+        const { body: firstBody } = await request(app).post('/oauth/callback').send({ url: firstUrl });
+
+        const user = await getMyUser({ headers: asBearerAuth(firstBody.accessToken) });
+        expect(user.quotaSizeInBytes).toBe(25 * 2 ** 30); // 25 GiB;
+
+        const url = await loginWithOAuth(OAuthUser.WITH_CHANGED_QUOTA);
+        const { status, body } = await request(app).post('/oauth/callback').send({ url: url });
+        expect(status).toBe(201);
+        expect(body).toMatchObject({
+          accessToken: expect.any(String),
+          userId: expect.any(String),
+          userEmail: 'oauth-with-quota@immich.app',
+        });
+
+        const user2 = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+        expect(user2.quotaSizeInBytes).toBe(42 * 2 ** 30); // 42 GiB;
+      });
+    });
+
     it('should set the storage label from a claim', async () => {
       const url = await loginWithOAuth(OAuthUser.WITH_USERNAME);
       const { status, body } = await request(app).post('/oauth/callback').send({ url });

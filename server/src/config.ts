@@ -98,6 +98,8 @@ export interface SystemConfig {
     profileSigningAlgorithm: string;
     storageLabelClaim: string;
     storageQuotaClaim: string;
+    updateStorageQuotaOnLogin: boolean;
+    updateUserNameOnLogin: boolean;
   };
   passwordLogin: {
     enabled: boolean;
@@ -259,6 +261,8 @@ export const defaults = Object.freeze<SystemConfig>({
     profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    updateStorageQuotaOnLogin: false,
+    updateUserNameOnLogin: false,
   },
   passwordLogin: {
     enabled: true,

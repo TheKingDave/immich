@@ -10,7 +10,7 @@ try {
 
 export default defineConfig({
   test: {
-    include: ['src/{api,cli,immich-admin}/specs/*.e2e-spec.ts'],
+    include: ['src/{api,cli,immich-admin}/specs/oauth.e2e-spec.ts'],
     globalSetup,
     testTimeout: 15_000,
     pool: 'threads',

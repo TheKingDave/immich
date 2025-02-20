@@ -1,9 +1,12 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { isString } from 'class-validator';
 import cookieParser from 'cookie';
+import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
+import { SystemConfig } from 'src/config';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
+import { Users } from 'src/db';
 import { OnEvent } from 'src/decorators';
 import {
   AuthDto,
@@ -188,7 +191,7 @@ export class AuthService extends BaseService {
   async callback(dto: OAuthCallbackDto, loginDetails: LoginDetails) {
     const { oauth } = await this.getConfig({ withCache: false });
     const profile = await this.oauthRepository.getProfile(oauth, dto.url, this.resolveRedirectUri(oauth, dto.url));
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
+    const { autoRegister, storageLabelClaim, updateStorageQuotaOnLogin, updateUserNameOnLogin } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -203,8 +206,25 @@ export class AuthService extends BaseService {
       }
     }
 
-    // register new user
-    if (!user) {
+    if (user) {
+      // Sync storage quota with oauth
+      const { userName, quotaSizeInBytes } = this.extractUsernameAndStorageQuota(profile, oauth);
+
+      const updateObject: Updateable<Users> = {};
+
+      if (user.quotaSizeInBytes != quotaSizeInBytes && updateStorageQuotaOnLogin) {
+        await this.userRepository.syncUsage(user.id);
+        updateObject.quotaSizeInBytes = quotaSizeInBytes;
+      }
+      if (user.name != userName && updateUserNameOnLogin) {
+        updateObject.name = userName;
+      }
+
+      if (Object.keys(updateObject).length > 0) {
+        await this.userRepository.update(user.id, updateObject);
+      }
+    } else {
+      // register new user
       if (!autoRegister) {
         this.logger.warn(
           `Unable to register ${profile.sub}/${profile.email || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
@@ -223,18 +243,14 @@ export class AuthService extends BaseService {
         default: '',
         isValid: isString,
       });
-      const storageQuota = this.getClaim(profile, {
-        key: storageQuotaClaim,
-        default: defaultStorageQuota,
-        isValid: (value: unknown) => Number(value) >= 0,
-      });
 
-      const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
+      const { userName, quotaSizeInBytes } = this.extractUsernameAndStorageQuota(profile, oauth);
+
       user = await this.createUser({
         name: userName,
         email: profile.email,
         oauthId: profile.sub,
-        quotaSizeInBytes: storageQuota * HumanReadableSize.GiB || null,
+        quotaSizeInBytes,
         storageLabel: storageLabel || null,
       });
     }
@@ -362,6 +378,24 @@ export class AuthService extends BaseService {
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
     const value = profile[options.key as keyof OAuthProfile];
     return options.isValid(value) ? (value as T) : options.default;
+  }
+
+  private extractUsernameAndStorageQuota(
+    profile: OAuthProfile,
+    oauth: SystemConfig['oauth'],
+  ): { userName: string; quotaSizeInBytes: number | null } {
+    const { defaultStorageQuota, storageQuotaClaim } = oauth;
+
+    const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
+
+    const storageQuota = this.getClaim(profile, {
+      key: storageQuotaClaim,
+      default: defaultStorageQuota,
+      isValid: (value: unknown) => Number(value) >= 0,
+    });
+    const quotaSizeInBytes = storageQuota * HumanReadableSize.GiB || null;
+
+    return { userName, quotaSizeInBytes };
   }
 
   private resolveRedirectUri(

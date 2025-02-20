@@ -28,6 +28,8 @@ class SystemConfigOAuthDto {
     required this.signingAlgorithm,
     required this.storageLabelClaim,
     required this.storageQuotaClaim,
+    required this.updateStorageQuotaOnLogin,
+    required this.updateUserNameOnLogin,
   });
 
   bool autoLaunch;
@@ -61,6 +63,10 @@ class SystemConfigOAuthDto {
 
   String storageQuotaClaim;
 
+  bool updateStorageQuotaOnLogin;
+
+  bool updateUserNameOnLogin;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
     other.autoLaunch == autoLaunch &&
@@ -77,7 +83,9 @@ class SystemConfigOAuthDto {
     other.scope == scope &&
     other.signingAlgorithm == signingAlgorithm &&
     other.storageLabelClaim == storageLabelClaim &&
-    other.storageQuotaClaim == storageQuotaClaim;
+    other.storageQuotaClaim == storageQuotaClaim &&
+    other.updateStorageQuotaOnLogin == updateStorageQuotaOnLogin &&
+    other.updateUserNameOnLogin == updateUserNameOnLogin;
 
   @override
   int get hashCode =>
@@ -96,10 +104,12 @@ class SystemConfigOAuthDto {
     (scope.hashCode) +
     (signingAlgorithm.hashCode) +
     (storageLabelClaim.hashCode) +
-    (storageQuotaClaim.hashCode);
+    (storageQuotaClaim.hashCode) +
+    (updateStorageQuotaOnLogin.hashCode) +
+    (updateUserNameOnLogin.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim]';
+  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, updateStorageQuotaOnLogin=$updateStorageQuotaOnLogin, updateUserNameOnLogin=$updateUserNameOnLogin]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -118,6 +128,8 @@ class SystemConfigOAuthDto {
       json[r'signingAlgorithm'] = this.signingAlgorithm;
       json[r'storageLabelClaim'] = this.storageLabelClaim;
       json[r'storageQuotaClaim'] = this.storageQuotaClaim;
+      json[r'updateStorageQuotaOnLogin'] = this.updateStorageQuotaOnLogin;
+      json[r'updateUserNameOnLogin'] = this.updateUserNameOnLogin;
     return json;
   }
 
@@ -145,6 +157,8 @@ class SystemConfigOAuthDto {
         signingAlgorithm: mapValueOfType<String>(json, r'signingAlgorithm')!,
         storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
         storageQuotaClaim: mapValueOfType<String>(json, r'storageQuotaClaim')!,
+        updateStorageQuotaOnLogin: mapValueOfType<bool>(json, r'updateStorageQuotaOnLogin')!,
+        updateUserNameOnLogin: mapValueOfType<bool>(json, r'updateUserNameOnLogin')!,
       );
     }
     return null;
@@ -207,6 +221,8 @@ class SystemConfigOAuthDto {
     'signingAlgorithm',
     'storageLabelClaim',
     'storageQuotaClaim',
+    'updateStorageQuotaOnLogin',
+    'updateUserNameOnLogin',
   };
 }
 

@@ -191,6 +191,20 @@
                 isEdited={!(config.oauth.defaultStorageQuota == savedConfig.oauth.defaultStorageQuota)}
               />
 
+              <SettingSwitch
+                title={$t('admin.oauth_update_storage_quota_on_login').toUpperCase()}
+                subtitle={$t('admin.oauth_update_storage_quota_on_login_description')}
+                disabled={disabled || !config.oauth.enabled}
+                bind:checked={config.oauth.updateStorageQuotaOnLogin}
+              />
+
+              <SettingSwitch
+                title={$t('admin.update_username_on_login').toUpperCase()}
+                subtitle={$t('admin.update_username_on_login_description')}
+                disabled={disabled || !config.oauth.enabled}
+                bind:checked={config.oauth.updateUserNameOnLogin}
+              />
+
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_button_text').toUpperCase()}

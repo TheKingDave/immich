@@ -12226,6 +12226,12 @@
           },
           "storageQuotaClaim": {
             "type": "string"
+          },
+          "updateStorageQuotaOnLogin": {
+            "type": "boolean"
+          },
+          "updateUserNameOnLogin": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -12243,7 +12249,9 @@
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
-          "storageQuotaClaim"
+          "storageQuotaClaim",
+          "updateStorageQuotaOnLogin",
+          "updateUserNameOnLogin"
         ],
         "type": "object"
       },

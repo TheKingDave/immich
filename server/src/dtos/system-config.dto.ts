@@ -383,6 +383,12 @@ class SystemConfigOAuthDto {
 
   @IsString()
   storageQuotaClaim!: string;
+
+  @ValidateBoolean()
+  updateStorageQuotaOnLogin!: boolean;
+
+  @ValidateBoolean()
+  updateUserNameOnLogin!: boolean;
 }
 
 class SystemConfigPasswordLoginDto {

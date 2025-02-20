@@ -11,6 +11,7 @@ export enum OAuthUser {
   NO_EMAIL = 'no-email',
   NO_NAME = 'no-name',
   WITH_QUOTA = 'with-quota',
+  WITH_CHANGED_QUOTA = 'with-changed-quota',
   WITH_USERNAME = 'with-username',
 }
 
@@ -34,6 +35,13 @@ const claims = [
     preferred_username: 'user-quota',
     immich_quota: 25,
   },
+  {
+    sub: OAuthUser.WITH_CHANGED_QUOTA,
+    email: 'oauth-with-quota@immich.app',
+    email_verified: true,
+    preferred_username: 'user-quota',
+    immich_quota: 42,
+  },
 ];
 
 const withDefaultClaims = (sub: string) => ({
@@ -45,7 +53,15 @@ const withDefaultClaims = (sub: string) => ({
   email_verified: true,
 });
 
-const getClaims = (sub: string) => claims.find((user) => user.sub === sub) || withDefaultClaims(sub);
+const getClaims = (sub: string) => {
+  const foundClaim = claims.find((user) => user.sub === sub) || withDefaultClaims(sub);
+
+  if (foundClaim.sub === OAuthUser.WITH_CHANGED_QUOTA) {
+    return { ...foundClaim, sub: OAuthUser.WITH_QUOTA };
+  }
+
+  return foundClaim;
+};
 
 const setup = async () => {
   const { privateKey, publicKey } = await generateKeyPair('RS256');
